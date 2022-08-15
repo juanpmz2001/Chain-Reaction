@@ -3,59 +3,17 @@ import sys
 from math import *
 
 
-
-# Quit or Close the Game Window
-def close():
+# print the grid state
+def printer():
     for x in grid:
         for obj in x:
             print(obj.__str__())
+
+# Quit or Close the Game Window
+def close():
+    #printer()
     pygame.quit()
     sys.exit()
-
-
-# Initialization of Pygame
-#close()
-pygame.init()
-
-horizontal_blocks=6
-vertical_blocks=11
-blocks = 40
-width = blocks*horizontal_blocks
-height = blocks*vertical_blocks
-display = pygame.display.set_mode((width, height))
-clock = pygame.time.Clock()
-
-# Colors
-background = (21, 67, 96)
-border = (208, 211, 212)
-red = (231, 76, 60)
-white = (244, 246, 247)
-violet = (136, 78, 160)
-yellow = (244, 208, 63)
-green = (88, 214, 141)
-
-#Selected players
-playerColor = [red, green]
-noPlayers = 2
-
-font = pygame.font.SysFont("Times New Roman", 30)
-
-#title of the game window 
-pygame.display.set_caption("Chain Reaction %d Player, Isis vs AI" % noPlayers)
-
-#initialize players and scores
-score = []
-players = []
-for i in range(noPlayers):
-    score.append(0)
-    players.append(playerColor[i])
-
-
-d = blocks//2 - 2
-
-cols = int(width//blocks)
-rows = int(height//blocks)
-grid = []
 
 # Class for Each Spot in Grid
 class Spot():
@@ -187,7 +145,7 @@ def gameOver(playerIndex):
         pygame.display.update()
         clock.tick(60)
 
-
+#
 def checkWon():
     num = 0
     for i in range(noPlayers):
@@ -228,6 +186,7 @@ def gameLoop():
                     currentPlayer += 1
                     if currentPlayer >= noPlayers:
                         currentPlayer = 0
+                    
                 if turns >= noPlayers:
                     isPlayerInGame()
                 
@@ -246,5 +205,52 @@ def gameLoop():
             gameOver(res)
 
         clock.tick(20)
+    
+# Initialization of Pygame
+#close()
+pygame.init()
+clock = pygame.time.Clock()
+
+    # Initializing the Screen
+    horizontal_blocks=6
+    vertical_blocks=11
+    blocks = 40
+    width = blocks*horizontal_blocks
+    height = blocks*vertical_blocks
+    display = pygame.display.set_mode((width, height))
+
+    # Colors
+    background = (21, 67, 96)
+    border = (208, 211, 212)
+    red = (231, 76, 60)
+    white = (244, 246, 247)
+    violet = (136, 78, 160)
+    yellow = (244, 208, 63)
+    green = (88, 214, 141)
+
+    #Selected players
+    playerColor = [red, green]
+    noPlayers = 2
+
+    font = pygame.font.SysFont("Times New Roman", 20)
+
+    #title of the game window 
+    pygame.display.set_caption("Chain Reaction %d Player, Isis vs AI" % noPlayers)
+
+    #initialize players and scores
+    score = []
+    players = []
+    for i in range(noPlayers):
+        score.append(0)
+        players.append(playerColor[i])
+
+
+    d = blocks//2 - 2
+
+    cols = int(width//blocks)
+    rows = int(height//blocks)
+    grid = []
+
+
 
 gameLoop()
