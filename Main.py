@@ -6,6 +6,9 @@ from math import *
 
 # Quit or Close the Game Window
 def close():
+    for x in grid:
+        for obj in x:
+            print(obj.__str__())
     pygame.quit()
     sys.exit()
 
@@ -52,8 +55,6 @@ d = blocks//2 - 2
 
 cols = int(width//blocks)
 rows = int(height//blocks)
-print(cols)
-print(rows)
 grid = []
 
 # Class for Each Spot in Grid
@@ -72,6 +73,9 @@ class Spot():
             self.neighbors.append(grid[i][j + 1])
         if j > 0:
             self.neighbors.append(grid[i][j - 1])
+
+    def __str__(self):
+        return f"{self.color}: {self.noAtoms}"
 
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
