@@ -2,11 +2,23 @@ import pygame
 import sys
 from math import *
 
+
+
+# Quit or Close the Game Window
+def close():
+    pygame.quit()
+    sys.exit()
+
+
 # Initialization of Pygame
+#close()
 pygame.init()
 
-width = 400
-height = 400
+horizontal_blocks=6
+vertical_blocks=11
+blocks = 40
+width = blocks*horizontal_blocks
+height = blocks*vertical_blocks
 display = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
@@ -25,10 +37,10 @@ noPlayers = 2
 
 font = pygame.font.SysFont("Times New Roman", 30)
 
-blocks = 40
-
+#title of the game window 
 pygame.display.set_caption("Chain Reaction %d Player, Isis vs AI" % noPlayers)
 
+#initialize players and scores
 score = []
 players = []
 for i in range(noPlayers):
@@ -40,13 +52,9 @@ d = blocks//2 - 2
 
 cols = int(width//blocks)
 rows = int(height//blocks)
-
+print(cols)
+print(rows)
 grid = []
-
-# Quit or Close the Game Window
-def close():
-    pygame.quit()
-    sys.exit()
 
 # Class for Each Spot in Grid
 class Spot():
@@ -58,9 +66,9 @@ class Spot():
     def addNeighbors(self, i, j):
         if i > 0:
             self.neighbors.append(grid[i - 1][j])
-        if i < rows - 1:
+        if i < cols - 1:
             self.neighbors.append(grid[i + 1][j])
-        if j < cols - 1:
+        if j < rows - 1:
             self.neighbors.append(grid[i][j + 1])
         if j > 0:
             self.neighbors.append(grid[i][j - 1])
@@ -69,13 +77,11 @@ class Spot():
 def initializeGrid():
     global grid, score, players
     score = []
-    for i in range(noPlayers):
-        score.append(0)
-
     players = []
     for i in range(noPlayers):
+        score.append(0)
         players.append(playerColor[i])
-
+        
     grid = [[]for _ in range(cols)]
     for i in range(cols):
         for j in range(rows):
@@ -89,7 +95,7 @@ def initializeGrid():
 def drawGrid(currentIndex):
     r = 0
     c = 0
-    for i in range(width//blocks):
+    for i in range(max(height,width)//blocks):
         r += blocks
         c += blocks
         pygame.draw.line(display, players[currentIndex], (c, 0), (c, height))
@@ -171,8 +177,8 @@ def gameOver(playerIndex):
         text = font.render("Player %d Won!" % (playerIndex + 1), True, white)
         text2 = font.render("Press \'r\' to Reset!", True, white)
 
-        display.blit(text, (width/3, height/3))
-        display.blit(text2, (width/3, height/2 ))
+        display.blit(text, ((width-160)/2, height/3))
+        display.blit(text2, ((width-200)/2, height/2 ))
 
         pygame.display.update()
         clock.tick(60)
