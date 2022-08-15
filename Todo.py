@@ -342,6 +342,7 @@ def checkWon():
 # Main Loop
 def gameLoop():
     initializeGrid()
+
     loop = True
 
     turns = 0
@@ -349,6 +350,12 @@ def gameLoop():
     currentPlayer = 0
 
     vibrate = .5
+
+    operators = [(i,j) for i,f in enumerate(grid) for j,c in enumerate(f)]
+
+    player_turn = 'Green'
+
+    node = NodeChain(player=(88, 214, 141), value="inicio", state = grid, operators= operators)
 
     while loop:
         for event in pygame.event.get():

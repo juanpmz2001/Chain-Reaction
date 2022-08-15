@@ -1,5 +1,5 @@
-
-from Node import Node
+import Tree
+import Node
 import numpy as np
 
 def overFlow(cell, color):
@@ -20,10 +20,10 @@ def addAtom(i, j, color,grid):
 class NodeChain(Node):
     ## Vamos a añadir el jugador, pues en dependencia del jugador se hace una cosa u otra.
     
-    def __init__(self, player=True,**kwargs):
+    def __init__(self, player=(88, 214, 141),**kwargs):
         super(NodeChain, self).__init__(**kwargs)
         self.player=player
-        if player:
+        if player == (88, 214, 141):
             self.v=float('-inf')
             player=(231, 76, 60)
         else:
@@ -45,8 +45,27 @@ class NodeChain(Node):
         return self.level
 
     ##Ver si el nodo es un nodo objetivo
-    def isObjective(self):
-        c=[f.copy() for f in self.state]
+    def isObjectiveC(self):
+        c = [f.copy() for f in self.state]
+        r = 0 
+        g = 0
+        for f in c:
+            for c in f:
+                if c.color == (231, 76, 60):
+                    r+=1
+                    if g != 0:
+                        return False
+                elif c.color == (88, 214, 141):
+                    g+=1
+                    if r != 0:
+                        return False
+        if (r == 0 and g > 0) or (r > 0 and g == 0):
+            return True
+        return False
+
+    ##Ver si el nodo es un nodo objetivo
+    def isObjectiveM(self):
+        c = [f.copy() for f in self.state]
         z= None
         for i,f in enumerate(c):
             a=0
@@ -57,8 +76,6 @@ class NodeChain(Node):
         if z==None:
             return False
         return True
-
-    ## Si es nodo objetivo, si X retornamos 1, si O -1 y si no 0
 
     def heuristic(self):
         # Creacion arreglo a de posibilidades

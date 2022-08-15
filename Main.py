@@ -260,7 +260,6 @@ def GameIA():
     global grid
     initializeGrid()
 
-
     loop = True
 
     turns = 0
@@ -271,7 +270,7 @@ def GameIA():
 
     operators = [(i,j) for i,f in enumerate(grid) for j,c in enumerate(f)]
 
-    node = NodeChain(True,value="inicio",state = grid, operators= operators)
+    node = NodeChain(player=(88, 214, 141),value="inicio",state = grid, operators= operators)
 
     while loop:
         for event in pygame.event.get():
@@ -296,7 +295,7 @@ def GameIA():
                         isPlayerInGame()
             else: 
                 node = NodeChain(True,value="inicio",state = grid, operators= operators)
-                tree = Treesses(node, operators)
+                tree = Tree(node, operators)
                 grid = tree.sAlphaBeta().state
                 currentPlayer += 1
                 if currentPlayer >= noPlayers:
