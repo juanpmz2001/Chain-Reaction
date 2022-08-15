@@ -6,7 +6,7 @@ import numpy as np
 
 class Node ():
 
-    def __init__(self, state,value,operators = None,operator=None, parent=None,objective=None, alpha = None, beta= None):
+    def __init__(self, state,value,operators = None,operator=None, parent=None,objective=None):
         self.state= state
         self.value = value
         self.children = []
@@ -16,8 +16,6 @@ class Node ():
         self.level=0
         self.operators=operators
         self.v=0
-        self.alpha = alpha
-        self.beta = beta
 
     def add_child(self, value, state, operator):
         node=type(self)(value=value, state=state, operator=operator,parent=self,operators=self.operators)

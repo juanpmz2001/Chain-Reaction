@@ -1,10 +1,189 @@
+import numpy as np
 import pygame
 import sys
 from math import *
-from NodeChain import NodeChain
-from Treess import Treesses
+import NodeChain
+import Treess
 
 
+class Node ():
+
+    def __init__(self, state,value,operators = None,operator=None, parent=None,objective=None):
+        self.state= state
+        self.value = value
+        self.children = []
+        self.parent=parent
+        self.operator=operator
+        self.level=0
+        self.operators=operators
+        self.v=0
+
+    def add_child(self, value, state, operator):
+        node=type(self)(value=value, state=state, operator=operator,parent=self,operators=self.operators)
+        node.level=node.parent.level+1
+        self.children.append(node)
+        return node
+    
+    def add_node_child(self, node):
+        node.level=node.parent.level+1
+        self.children.append(node)    
+        return node
+
+    #Devuelve todos los estados según los operadores aplicados
+    def getchildrens(self):
+        return [
+            self.getState(i) 
+                if not self.repeatStatePath(self.getState(i)) 
+                    else None for i, op in enumerate(self.operators)]
+        
+    def getState(self, index):
+        pass
+    
+    def __eq__(self, other):
+        return self.state == other.state
+    
+    def __lt__(self, other):
+        return self.f() < other.f()
+    
+    
+    def repeatStatePath(self, state):
+        n=self
+        while n is not None and n.state!=state:
+            n=n.parent
+        return n is not None
+        
+    def pathObjective(self):
+        n=self
+        result=[]
+        while n is not None:
+            result.append(n)
+            n=n.parent
+        return result
+
+    def cost(self):
+        return 1
+    
+    def f(self): 
+        return self.cost()+self.heuristic()
+
+    def heuristic(self):
+        return 0
+    ### Crear método para criterio objetivo
+    ### Por defecto vamos a poner que sea igual al estado objetivo, para cada caso se puede sobreescribir la función
+    def isObjective(self):
+        return (self.state==self.objetive.state)
+
+class NodeChain(Node):
+
+    ## Vamos a añadir el jugador, pues en dependencia del jugador se hace una cosa u otra.
+    
+    def __init__(self, player=True,**kwargs):
+        super(NodeChain, self).__init__(**kwargs)
+        self.player=player
+        if player:
+            self.v=float('-inf')
+        else:
+            self.v=float('inf')
+
+    def getState(self, index):
+        state=self.state
+        nextState=None
+        (x,y)=self.operators[index]
+        if state[x][y].color == self.player or state[x][y].nroAtoms == 0:
+            nextState= [f.copy() for f in state]
+            nextState[x][y].addAtom(x, y, self.player)
+
+        return nextState if state!=nextState else None
+
+    #Costo acumulativo(valor 1 en cada nivel)
+    def cost(self):
+        return self.level
+
+    ##Ver si el nodo es un nodo objetivo
+    def isObjective(self):
+        c=[f.copy() for f in self.state]
+        z= None
+        for i,f in enumerate(c):
+            a=0
+            while (z==None or z==f[a].color) and a<len(f):
+                a+=1
+            if a<len(f):
+                return False
+        if z==None:
+            return False
+        return True
+
+    ## Si es nodo objetivo, si X retornamos 1, si O -1 y si no 0
+
+    def heuristic(self):
+        # Creacion arreglo a de posibilidades
+        h=0 
+        """
+        #verdes a punto de estallar-rojas a punto de estallar
+        for c in self.state:
+            for f in c:
+                if f.sdc == len(f.neighbors-1):
+                    if f.color == green:
+                        h+=1
+                    else:
+                        h-=1
+        """
+        for c in self.state:
+            for f in c:
+                if f.color == (88, 214, 141):
+                    h+=1
+                else:
+                    h-=1
+        return h
+
+class Treess ():
+    def __init__(self, root ,operators):
+        self.root=root
+        self.operators=operators
+
+    def reinitRoot(self):
+        self.root.operator=None
+        self.root.parent=None
+        self.root.objective=None
+        self.root.children = []
+        self.root.level=0
+
+    def alphabeta(self, node, depth, alpha, beta, player):
+        if depth == 0 or node.isObjective():
+            node.v = node.heuristic()
+            return node.heuristic()
+        if player:
+            value=float('-inf')
+            children = node.getchildrens()
+            for i,child in enumerate(children):
+                if child is not None:
+                    newChild=type(self.root)(value=node.value+'-'+str(i),state=child.copy(),operator=i,parent=node, operators=node.operators,player=False)
+                    newChild=node.add_node_child(newChild)
+                    value = max(value,self.alphabeta(newChild, depth-1, alpha,beta,False))
+                    alpha = max(alpha,value)
+                    if alpha>=beta:
+                        break
+        else:
+            value=float('inf')
+            children = node.getchildrens()
+            for i,child in enumerate(children):
+                if child is not None:
+                    newChild=type(self.root)(value=node.value+'-'+str(i),state=child.copy(),operator=i,parent=node, operators=node.operators,player=True)
+                    newChild=node.add_node_child(newChild)
+                    value = min(value,self.alphabeta(newChild, depth-1, alpha,beta,True))
+                    beta = min(beta,value)
+                    if alpha>=beta:
+                        break
+        node.v = value
+        return value 
+    
+    def sAlphaBeta(self, depth = 6):
+        self.root.v= self.alphabeta(self.root, depth, float('-inf'), float('+inf'), True)
+        values=[c.v for c in self.root.children]
+        maxvalue=max(values)
+        index=values.index(maxvalue)
+        return self.root.children[index] if not self.root.isObjective() else self.root
+    
 # print the grid state
 def printer():
     for x in grid:
@@ -256,10 +435,7 @@ grid = []
 
 
 def GameIA():
-
-    global grid
     initializeGrid()
-
 
     loop = True
 
@@ -271,7 +447,7 @@ def GameIA():
 
     operators = [(i,j) for i,f in enumerate(grid) for j,c in enumerate(f)]
 
-    node = NodeChain(True,value="inicio",state = grid, operators= operators)
+    node = NodeChain(True,True,value="inicio",state = grid, operators= operators)
 
     while loop:
         for event in pygame.event.get():
@@ -296,7 +472,7 @@ def GameIA():
                         isPlayerInGame()
             else: 
                 node = NodeChain(True,value="inicio",state = grid, operators= operators)
-                tree = Treesses(node, operators)
+                tree = Treess(node, operators)
                 grid = tree.sAlphaBeta().state
                 currentPlayer += 1
                 if currentPlayer >= noPlayers:
