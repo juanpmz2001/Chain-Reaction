@@ -6,8 +6,8 @@ import sys
 pygame.init()
 clock = pygame.time.Clock()
 
-horizontal_blocks=6
-vertical_blocks=11
+horizontal_blocks=11
+vertical_blocks=6
 blocks = 40
 width = blocks*horizontal_blocks
 height = blocks*vertical_blocks
@@ -391,12 +391,13 @@ def checkwin(gride, turns):
         return True
     return False
 
-cols = 11
-rows = 6
+cols = 6
+rows = 11
 red = (231, 76, 60)
 green = (88, 214, 141)
 
 def gameIA():
+    
     vibrate = .5
     current_state = []
     for i in range(rows):
@@ -410,7 +411,12 @@ def gameIA():
     player_turn = True
     printState(current_state)
     turns = -10
-
+    display.fill(background)
+    # Vibrate the Atoms in their Cells
+    vibrate *= -1
+    drawGrid(int(1) if player_turn else int(0))
+    showPresentGrid(current_state,vibrate)
+    pygame.display.update()
     while not checkwin(current_state, turns):
         if player_turn:
             loop=True
