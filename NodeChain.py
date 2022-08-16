@@ -2,21 +2,6 @@ import Tree
 import Node
 import numpy as np
 
-def overFlow(cell, color):
-    cell.noAtoms = 0
-    for m in range(len(cell.neighbors)):
-        cell.neighbors[m].noAtoms += 1
-        cell.neighbors[m].color = color
-        if cell.neighbors[m].noAtoms >= len(cell.neighbors[m].neighbors):
-            overFlow(cell.neighbors[m], color)
-
-def addAtom(i, j, color,grid):
-    grid[int(i)][int(j)].noAtoms += 1
-    grid[int(i)][int(j)].color = color
-    if grid[int(i)][int(j)].noAtoms >= len(grid[int(i)][int(j)].neighbors):
-        overFlow(grid[int(i)][int(j)], color)
-
-
 class NodeChain(Node):
     ## Vamos a añadir el jugador, pues en dependencia del jugador se hace una cosa u otra.
     
@@ -36,8 +21,11 @@ class NodeChain(Node):
         (x,y)=self.operators[index]
         if state[x][y].color == self.player or state[x][y].noAtoms == 0:
             nextState=state.copy()
-            addAtom(x, y, self.player,nextState)
-
+            newCellsToExplote = 1
+            while (newCellsToExplote>0):
+                grid,newCellsToExplote = gridround(nextState)
+                if checkwin(nextState):
+                    break
         return nextState if state!=nextState else None
 
     #Costo acumulativo(valor 1 en cada nivel)
