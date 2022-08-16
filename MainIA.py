@@ -1,5 +1,6 @@
 from asyncore import loop
 from math import *
+from tabnanny import check
 import pygame
 import sys
 
@@ -8,7 +9,7 @@ clock = pygame.time.Clock()
 
 horizontal_blocks=11
 vertical_blocks=6
-blocks = 40
+blocks = 60
 width = blocks*horizontal_blocks
 height = blocks*vertical_blocks
 display = pygame.display.set_mode((width, height))
@@ -21,6 +22,8 @@ green = (88, 214, 141)
 white = (255, 255, 255)
 players = [red, green]
 font = pygame.font.SysFont("Times New Roman", 20)
+global turns
+turns = 0
 
 #title of the game window 
 pygame.display.set_caption("Chain Reaction Player, Isis vs AI" )
@@ -87,7 +90,7 @@ def gameOver(playerIndex):
 
         display.blit(text, ((width-160)/2, height/3))
         display.blit(text2, ((width-160)/2, height/2 ))
-        display.blit(text3, ((width-160)/2, height/2 ))
+        display.blit(text3, ((width-160)/2, 2*height/3 ))
 
         pygame.display.update()
         clock.tick(60)
@@ -353,7 +356,7 @@ class Spot():
     def addAtom(self, color, state):
         self.noAtoms += 1
         self.color = color
-        if self.noAtoms >= len(self.neighbors):
+        if self.noAtoms >= len(self.neighbors) and not checkwin(state):
             self.color = None
             self.noAtoms = 0
             #print(len(self.neighbors))
@@ -377,16 +380,17 @@ def printState(state):
         x = ''
     print(' ')
 
-def checkwin(gride, turns):
-    firstcolor=None
-
+def checkwin(gride):
+    firstcolor="nada"
     if turns>2:
+        #printState(gride)
         for col in gride:
             for cell in col:
-                if cell.noAtoms!=0:
-                    if firstcolor==None:
+                if cell.noAtoms>0:
+                    if firstcolor=="nada":
                         firstcolor=cell.color
-                    if firstcolor!=cell.color:
+                    elif firstcolor!=cell.color:
+                        #print(f'comparando {firstcolor} y {cell.color}')
                         return False
         return True
     return False
@@ -410,14 +414,18 @@ def gameIA():
 
     player_turn = True
     printState(current_state)
-    turns = -10
+    global turns
+    turns = 0
     display.fill(background)
     # Vibrate the Atoms in their Cells
     vibrate *= -1
-    drawGrid(int(1) if player_turn else int(0))
+    drawGrid(int(0) if player_turn else int(1))
     showPresentGrid(current_state,vibrate)
     pygame.display.update()
-    while not checkwin(current_state, turns):
+    global check
+    check = checkwin(current_state)
+    while not check:
+        print(f'en el ciclo check win = {check}')
         if player_turn:
             loop=True
             while loop:
@@ -433,27 +441,33 @@ def gameIA():
                         py = int(y/blocks)
                         if current_state[px][py].color == red or current_state[px][py].color == None:
                             current_state = current_state[px][py].addAtom(red, current_state)
-                        player_turn = False
-                        loop = False
+                            player_turn = False
+                            turns+=1
+                            #print(f"truns player: {turns}")
+                            loop = False
                 
         else:
             node = NodeChain(green,value="inicio",state = current_state, operators= operators)
             tree = Tree(node, operators)
             current_state = tree.sAlphaBeta().state
             player_turn = True
+            turns += 1
 
         display.fill(background)
         # Vibrate the Atoms in their Cells
         vibrate *= -1
-        drawGrid(int(1) if player_turn else int(0))
+        drawGrid(int(0) if player_turn else int(1))
         showPresentGrid(current_state,vibrate)
         pygame.display.update()
-        turns += 1
         clock.tick(20)
-        printState(current_state)
-
+        #printState(current_state)
+        print(f"truns: {turns}")
+        check = checkwin(current_state)
+    
     if player_turn:
         gameOver("Green")
     else:
         gameOver("Red")
+
 gameIA()
+gameOver("Green")
