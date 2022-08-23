@@ -10,6 +10,7 @@ clock = pygame.time.Clock()
 horizontal_blocks=11
 vertical_blocks=6
 blocks = 60
+counter=0
 width = blocks*horizontal_blocks
 height = blocks*vertical_blocks
 display = pygame.display.set_mode((width, height))
@@ -24,6 +25,7 @@ players = [red, green]
 font = pygame.font.SysFont("Times New Roman", 20)
 global turns
 turns = 0
+vibrate = .5
 
 #title of the game window 
 pygame.display.set_caption("Chain Reaction Player, Isis vs AI" )
@@ -225,23 +227,35 @@ class NodeChain(Node):
         # Creacion arreglo a de posibilidades
         h=0 
         
-        #verdes a punto de estallar-rojas a punto de estallar
-        for c in self.state:
+        #verdes a punto de estallar-rojas a punto de estallar"""
+        """for c in self.state:
             for f in c:
-                if f.noAtoms == (len(f.neighbors) - 1):
+                if f.noAtoms == (len(f.neighbors) - 1):   #esta es la buenaaaaaa
                     if f.color == green:
                         h+=1
                     else:
                         h-=1
-        """
+        
         for c in self.state:
             for f in c:
                 if f.color == (88, 214, 141) or f.color == None:
                     h+=1
                 else:
-                    h-=1
+                    h-=1"""
 
-        """
+        
+        for c in self.state:
+            for f in c:
+                if f.noAtoms == (len(f.neighbors) - 1):
+                    if f.color == green:
+                        h+=3
+                    else:
+                        h-=3
+                elif f.noAtoms == (len(f.neighbors) - 2):
+                    if f.color == green:
+                        h+=1
+                    else:
+                        h-=1
         return h
 
 class Tree():
@@ -354,9 +368,11 @@ class Spot():
         return adj
 
     def addAtom(self, color, state):
+        global counter
+        counter += 1
         self.noAtoms += 1
         self.color = color
-        if self.noAtoms >= len(self.neighbors) and not checkwin(state):
+        if self.noAtoms >= len(self.neighbors) and not(counter%79 == 0 or checkwin(state)):
             self.color = None
             self.noAtoms = 0
             #print(len(self.neighbors))
@@ -395,6 +411,15 @@ def checkwin(gride):
         return True
     return False
 
+def showGame(gride,color):
+    display.fill(background)
+    # Vibrate the Atoms in their Cells
+    global vibrate 
+    vibrate *= -1
+    drawGrid(color)
+    showPresentGrid(gride,vibrate)
+    pygame.display.update()
+
 cols = 6
 rows = 11
 red = (231, 76, 60)
@@ -402,7 +427,7 @@ green = (88, 214, 141)
 
 def gameIA():
     
-    vibrate = .5
+    history=[]
     current_state = []
     for i in range(rows):
         current_state.append([])
@@ -416,16 +441,23 @@ def gameIA():
     printState(current_state)
     global turns
     turns = 0
-    display.fill(background)
-    # Vibrate the Atoms in their Cells
-    vibrate *= -1
-    drawGrid(int(0) if player_turn else int(1))
-    showPresentGrid(current_state,vibrate)
-    pygame.display.update()
     global check
+    showGame(current_state,int(0) if player_turn else int(1))
     check = checkwin(current_state)
+
+
     while not check:
-        print(f'en el ciclo check win = {check}')
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                close()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    close()
+                if event.key == pygame.K_LEFT:
+                    current_state = history.pop()
+                    current_state = history.pop()
+                    showGame(current_state,int(0) if player_turn else int(1))
+
         if player_turn:
             loop=True
             while loop:
@@ -435,6 +467,10 @@ def gameIA():
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_q:
                             close()
+                        if event.key == pygame.K_LEFT and len(history)>=1:
+                            current_state = history.pop()
+                            
+
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         x, y = pygame.mouse.get_pos()
                         px = int(x/blocks)
@@ -452,16 +488,9 @@ def gameIA():
             current_state = tree.sAlphaBeta().state
             player_turn = True
             turns += 1
-
-        display.fill(background)
-        # Vibrate the Atoms in their Cells
-        vibrate *= -1
-        drawGrid(int(0) if player_turn else int(1))
-        showPresentGrid(current_state,vibrate)
-        pygame.display.update()
+        showGame(current_state,int(0) if player_turn else int(1))
+        history.append(current_state)
         clock.tick(20)
-        #printState(current_state)
-        print(f"truns: {turns}")
         check = checkwin(current_state)
     
     if player_turn:
@@ -470,4 +499,3 @@ def gameIA():
         gameOver("Red")
 
 gameIA()
-gameOver("Green")

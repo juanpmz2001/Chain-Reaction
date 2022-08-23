@@ -254,10 +254,6 @@ class Spot():
         return Spot(color = self.color, neighbors = self.neighbors.copy(), noAtoms = self.noAtoms)
 
 # Quit or Close the Game Window
-def close():
-    pygame.quit()
-    sys.exit()
-
 # Initializing the Grid with "Empty or 0"
 def initializeGrid():
     global grid
@@ -435,7 +431,7 @@ def GameIA():
                     x, y = pygame.mouse.get_pos()
                     i = x/blocks
                     j = y/blocks
-                    if grid[int(i)][int(j)].color == players[int(currentPlayer)] or grid[int(i)][int(j)].noAtoms == 0:
+                    if grid[int(i)][int(j)].color == players[currentPlayer] or grid[int(i)][int(j)].noAtoms == 0:
                         newCellsToExplote=1
                         grid[int(i)][int(j)].noAtoms += 1
                         grid[int(i)][int(j)].color = players[currentPlayer]
